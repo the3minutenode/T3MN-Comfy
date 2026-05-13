@@ -16,11 +16,11 @@ def get_exiftool(base_path):
     
     # Define paths and URLs based on OS
     if system == "Windows":
-        target_path = os.path.join(bin_dir, "exiftool.exe")
+        target_path = os.path.join(bin_dir, "exiftool-13.58_64", "exiftool.exe")
         url = "https://exiftool.org/exiftool-13.58_64.zip"
         is_zip = True
     elif system == "Linux" or system == "Darwin": # Linux or macOS
-        target_path = os.path.join(bin_dir, "exiftool")
+        target_path = os.path.join(bin_dir, "Image-ExifTool-13.58", "exiftool")
         url = "https://exiftool.org/Image-ExifTool-13.58.tar.gz"
         is_zip = False
     else:
@@ -35,25 +35,24 @@ def get_exiftool(base_path):
     archive_path = os.path.join(bin_dir, "temp_archive")
     
     try:
-        # 1. Download
+        # Download
         urllib.request.urlretrieve(url, archive_path)
         
-        # 2. Extract
+        # Extract
         if is_zip:
             with zipfile.ZipFile(archive_path, 'r') as zip_ref:
                 zip_ref.extractall(bin_dir)
             # The zip contains 'exiftool(-k).exe', rename it for script use
-            raw_exe = os.path.join(bin_dir, "exiftool(-k).exe")
+            raw_exe = os.path.join(bin_dir, "exiftool-13.58_64", "exiftool(-k).exe")
             if os.path.exists(raw_exe):
                 os.rename(raw_exe, target_path)
         else:
             with tarfile.open(archive_path, "r:gz") as tar_ref:
                 tar_ref.extractall(bin_dir)
-            # For Linux/Mac, point to the perl execution script
-            # and ensure it's executable
-            source_folder = os.path.join(bin_dir, "Image-ExifTool-13.58")
-            shutil.move(os.path.join(source_folder, "exiftool"), target_path)
-            os.chmod(target_path, 0o755) 
+            # Ensure the perl script is executable
+            if os.path.exists(target_path):
+                st = os.stat(target_path)
+                os.chmod(target_path, st.st_mode | stat.S_IEXEC)
 
         print(f"--- T3MN Comfy: ExifTool Ready ---")
         
