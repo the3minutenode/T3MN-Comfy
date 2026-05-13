@@ -15,8 +15,8 @@ class ExifToolMetadata:
             },
         }
 
-    RETURN_TYPES = ("STRING")
-    RETURN_NAMES = ("json_output")
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("json_output",)
     FUNCTION = "get_metadata"
     CATEGORY = "t3mn"
 
@@ -27,10 +27,10 @@ class ExifToolMetadata:
         exiftool_path = get_exiftool(base_path)
         
         if not exiftool_path or not os.path.exists(exiftool_path):
-            return (f"ExifTool binary missing or unsupported OS.", {})
+            return (f"ExifTool binary missing or unsupported OS.",)
 
         if not os.path.exists(image_path):
-            return (f"Image not found at: {image_path}", {})
+            return (f"Image not found at: {image_path}",)
 
         # Execute: exiftool -a -u -g1 -json [path]
         try:
@@ -47,10 +47,10 @@ class ExifToolMetadata:
             # Format as a readable string for the UI
             json_output = json.dumps(metadata_dict, indent=4)
             
-            return (json_output)
+            return (json_output,)
             
         except Exception as e:
-            return (f"Error running ExifTool: {str(e)}", {})
+            return (f"Error: {str(e)}",)
 
 class NodeSourceCodeViewer:
     @classmethod
@@ -67,10 +67,11 @@ class NodeSourceCodeViewer:
             "required": {
                 # Sort them so groups stick together
                 "node_path": (sorted(grouped_list),),
-            }
+            },
         }
 
     RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("source_code",)
     FUNCTION = "get_source"
     CATEGORY = "t3mn"
 
