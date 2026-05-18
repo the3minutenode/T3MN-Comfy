@@ -1,14 +1,16 @@
-# The 3-Minute Node ComfyUI Custom Nodes v0.1 260513
-from .nodes import ExifToolMetadata, NodeSourceCodeViewer
+# The 3-Minute Node ComfyUI Custom Nodes v0.1 260518
+from .nodes import ExifToolMetadata, NodeSourceCodeViewer, ResilientModelExtractor
 
 NODE_CLASS_MAPPINGS = {
     "ExifToolMetadata": ExifToolMetadata,
-    "NodeSourceCodeViewer": NodeSourceCodeViewer
+    "NodeSourceCodeViewer": NodeSourceCodeViewer,
+    "ResilientModelExtractor": ResilientModelExtractor,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "ExifToolMetadata": "ExifTool Full Metadata",
-    "NodeSourceCodeViewer": "Node Source Code Viewer"
+    "NodeSourceCodeViewer": "Node Source Code Viewer",
+    "ResilientModelExtractor": "Resilient Model Extractor (Recursive)",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

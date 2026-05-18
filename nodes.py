@@ -93,3 +93,90 @@ class NodeSourceCodeViewer:
         except Exception as e:
             return (f"Error: {str(e)}",)
 
+class ResilientModelExtractor:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "json_path": ("STRING", {"default": "path/to/.json"}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("model_report",)
+    FUNCTION = "extract_models"
+    CATEGORY = "t3mn"
+    
+    def extract_models(self, json_path=""):
+        data = None
+        report_lines = []
+        json_path = json_path.strip().strip('"')
+
+        # load the JSON data
+        if json_path and os.path.exists(json_path):
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception as e:
+                return (f"Error reading JSON file path: {str(e)}",)
+        else:
+            return ("Invalid JSON file path.",)
+
+        # scan the "nodes" array
+        nodes = data.get("nodes", [])
+        extracted_models = []
+
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            
+            if node.get("type") == "MarkdownNote":
+                continue
+
+            # gather all .safetensors files found anywhere inside this specific node
+            found_files = []
+            self.find_safetensors_recursive(node, found_files)
+
+            if found_files:
+                node_type = node.get("type", "Unknown Class")
+                node_id = node.get("id", "Unknown ID")
+                # node_title = node.get("title") or node.get("properties", {}).get("Node name for S&R", "No Title")
+
+                for file_name in set(found_files): # set() avoids duplicates if it appears twice in one node
+                    extracted_models.append({
+                        "file_name": file_name,
+                        "node_type": node_type,
+                        "node_id": node_id,
+                        # "node_title": node_title
+                    })
+
+        # build the report
+        report_lines.append("--- safetensors search ---")
+        if not extracted_models:
+            report_lines.append("No '.safetensors' references discovered in this workflow structure.")
+        else:
+            for item in extracted_models:
+                report_lines.append(f"Model File: {item['file_name']}")
+                report_lines.append(f"  ├── Node Class (Type): {item['node_type']}")
+                report_lines.append(f"  ├── Node ID: {item['node_id']}")
+                # report_lines.append(f"  └── Node Title/Alias: {item['node_title']}")
+                report_lines.append("-" * 45)
+
+        return ("\n".join(report_lines),)
+
+    def find_safetensors_recursive(self, target, found_list):
+        """Recursively traverses lists and dicts looking for .safetensors strings"""
+        if isinstance(target, str):
+            cleaned_target = target.split('?')[0].strip()
+
+            if cleaned_target.lower().endswith(".safetensors"):
+                file_name = os.path.basename(cleaned_target)
+                if file_name not in found_list:
+                    found_list.append(file_name)
+        elif isinstance(target, dict):
+            for value in target.values():
+                self.find_safetensors_recursive(value, found_list)
+        elif isinstance(target, list):
+            for item in target:
+                self.find_safetensors_recursive(item, found_list)
+
