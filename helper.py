@@ -1,9 +1,9 @@
 import os
 import platform
+import stat
 import urllib.request
 import zipfile
 import tarfile
-import shutil
 
 def get_exiftool(base_path):
     """
@@ -31,7 +31,6 @@ def get_exiftool(base_path):
         return target_path
 
     print(f"--- T3MN Comfy: Downloading ExifTool for {system} ---")
-    
     archive_path = os.path.join(bin_dir, "temp_archive")
     
     try:
@@ -60,6 +59,7 @@ def get_exiftool(base_path):
         print(f"Error downloading ExifTool: {e}")
         return None
     finally:
+        # Remove
         if os.path.exists(archive_path):
             os.remove(archive_path)
             
